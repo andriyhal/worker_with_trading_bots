@@ -1,73 +1,79 @@
 require("dotenv").config()
 const {Spot} = require('@binance/connector');
 
-const workEnv = [process.env.VITALIY_API_KEY, process.env.VITALIY_SECRET_KEY]
-// const workEnv = [process.env.API_KEY_SPOT, process.env.SECRET_KEY_SPOT]
+const workEnv = [process.env.API_KEY, process.env.SECRET_KEY]
 
-const TRADE_USDT_QUANTITY = 170;
-const USDT_UAH_SELL_PRICE = 40.32;
-const USDT_UAH_BUY_PRICE = 40.23;
-const DEFAULT_CURRENT_PRICE = 0;
+const TRADE_USDT_QUANTITY = 11;
+const USDT_UAH_SELL_PRICE = "39.90";
+const USDT_UAH_BUY_PRICE = "39.82";
 const USDT_UAH = 'USDTUAH';
+const TIME_IN_FORCE = 'GTC';
 
-const createSellOrder = (quantity) => {
-    const client = new Spot(...workEnv)
-
-    client.newOrder(USDT_UAH, 'SELL', 'MARKET', {
-        quantity,
-    }).then(response => console.log(response.data))
-        .catch(error => console.log(error))
+const SELL_LIMIT_ORDER_OPTIONS = {
+    price: USDT_UAH_SELL_PRICE,
+    quantity: TRADE_USDT_QUANTITY,
+    timeInForce: TIME_IN_FORCE
 }
 
-const createBuyOrder = (quantity) => {
-    const client = new Spot(...workEnv)
-
-    client.newOrder(USDT_UAH, 'BUY', 'MARKET', {
-        quantity,
-    }).then(response => client.logger.log(response.data))
-        .catch(error => client.logger.error(error))
+const BUY_LIMIT_ORDER_OPTIONS = {
+    price: USDT_UAH_BUY_PRICE,
+    quantity: TRADE_USDT_QUANTITY,
+    timeInForce: TIME_IN_FORCE
 }
+
+const createSellOrder = ({client}) =>
+    client.newOrder(USDT_UAH, 'SELL', 'LIMIT', SELL_LIMIT_ORDER_OPTIONS)
+
+const createBuyOrder = ({client}) => client.newOrder(USDT_UAH, 'BUY', 'LIMIT', BUY_LIMIT_ORDER_OPTIONS)
 
 const client = new Spot(...workEnv)
 
 const trade = () => {
-    let currentPrice = DEFAULT_CURRENT_PRICE;
-    let isSellOrderActive = true;
+    let isFirstLoad = true;
+    let isCurrentOpenOrderBuy = false;
+    let currentOrderId  = null;
 
-    const callbacks = {
-        open: () => console.log('Connected with Websocket server'),
-        close: () => console.log('Disconnected with Websocket server'),
-        message: data => {
-            currentPrice = JSON.parse(data).p
-            console.log("currentPrice: ", currentPrice)
-        }
+    if(isFirstLoad){
+        createBuyOrder(({client})).then(({data}) => {
+            isFirstLoad = false
+            isCurrentOpenOrderBuy = false;
+            currentOrderId = data.orderId
+            console.log("First Buy order created", data);
+        }).catch(e => {
+            isFirstLoad = true;
+            isCurrentOpenOrderBuy = true;
+            console.log("Buy failed", e);
+        })
     }
 
-    client.aggTradeWS(USDT_UAH, callbacks)
-
     setInterval(() => {
-        if (currentPrice <= USDT_UAH_BUY_PRICE && !isSellOrderActive){
-            try {
-                createBuyOrder({quantity: TRADE_USDT_QUANTITY, client});
-                isSellOrderActive = true;
-                console.log("buy order created", currentPrice);
-            } catch(e) {
-                isSellOrderActive = false;
-                console.log("buy failed", e);
+        client.getOrder(USDT_UAH, {
+            orderId: currentOrderId
+        }).then(({ data }) => {
+            console.log(`get order: ${ new Date() }`, {data, currentOrderId})
+            if(data.status === "FILLED" && isCurrentOpenOrderBuy){
+                createSellOrder(({client})).then(({data}) => {
+                    currentOrderId = data.orderId;
+                    isCurrentOpenOrderBuy = true;
+                    console.log("Sell order created", data);
+                }).catch(err => {
+                    isCurrentOpenOrderBuy = false;
+                    console.log("Sell failed", err);
+                });
             }
-        }
 
-        if (currentPrice >= USDT_UAH_SELL_PRICE && isSellOrderActive) {
-            try {
-                createSellOrder({quantity: TRADE_USDT_QUANTITY, client});
-                isSellOrderActive = false;
-                console.log("sell order created", currentPrice);
-            } catch(e) {
-                isSellOrderActive = true;
-                console.log("sell failed", e);
-            }
-        }
-    }, 1)
+            if(data.status === "FILLED" && !isCurrentOpenOrderBuy){
+                createBuyOrder(({client})).then(({data}) => {
+                    currentOrderId = data.orderId;
+                    isCurrentOpenOrderBuy = false;
+                    console.log("Buy order created", data);
+                }).catch(e => {
+                    isCurrentOpenOrderBuy = true;
+                    console.log("Sell failed", e);
+                })
+            }}).catch(error => console.log(error))
+
+    }, 5000)
 }
 
 trade()
