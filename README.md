@@ -1,1 +1,1 @@
-# worker_with_trading_bots
+# spot_trading
