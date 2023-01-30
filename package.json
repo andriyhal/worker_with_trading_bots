@@ -4,9 +4,15 @@
   "description": "start create env",
   "main": "index.js",
   "license": "MIT",
+  "type": "module",
   "dependencies": {
     "@binance/connector": "^2.0.0-rc.4",
+    "@prisma/client": "^4.9.0",
     "cron": "^2.2.0",
-    "dotenv": "^16.0.3"
+    "dotenv": "^16.0.3",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "prisma": "^4.9.0"
   }
 }
