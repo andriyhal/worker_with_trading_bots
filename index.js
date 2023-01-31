@@ -1,7 +1,7 @@
 require("dotenv").config()
 const {Spot} = require('@binance/connector');
 
-const workEnv = [process.env.API_KEY, process.env.SECRET_KEY]
+const workEnv = ["b0oAIiuWAvLDfEAB1eAEWZ8AyBNnwagYBZK2GpirX8Ao0NNzZg9Z599pDiMlJKEd", "UNWbaI6H9OonPbGcrU6EAUOD02zBTxpJllo4E2iKjm9PjLGqqvzRsMUck387IoMy"]
 
 const TRADE_USDT_QUANTITY = 11;
 const USDT_UAH_SELL_PRICE = "40.03";
