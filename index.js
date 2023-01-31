@@ -1,11 +1,11 @@
 require("dotenv").config()
 const {Spot} = require('@binance/connector');
 
-const workEnv = ["b0oAIiuWAvLDfEAB1eAEWZ8AyBNnwagYBZK2GpirX8Ao0NNzZg9Z599pDiMlJKEd", "UNWbaI6H9OonPbGcrU6EAUOD02zBTxpJllo4E2iKjm9PjLGqqvzRsMUck387IoMy"]
+const workEnv = ["kajUUropn0q1s37n9Y7jEr9fAgzAE6MLh7hIgXuIkP5EwAKyDlWZySVoTl7tSyJO", "tR57OBr2jh6AMEfyxOeJZsfgkrcsT8zjHUyj2gZsvqcM8sJB7rII4tFKSTGTLAXL"]
 
-const TRADE_USDT_QUANTITY = 11;
-const USDT_UAH_SELL_PRICE = "40.03";
-const USDT_UAH_BUY_PRICE = "39.90";
+const TRADE_USDT_QUANTITY = 200;
+const USDT_UAH_SELL_PRICE = "40.01";
+const USDT_UAH_BUY_PRICE = "39.81";
 const USDT_UAH = 'USDTUAH';
 const TIME_IN_FORCE = 'GTC';
 
@@ -34,15 +34,15 @@ const trade = () => {
     let currentOrderId  = null;
 
     if(isFirstLoad){
-        createBuyOrder(({client})).then(({data}) => {
+        createSellOrder(({client})).then(({data}) => {
             isFirstLoad = false
-            isCurrentOpenOrderBuy = false;
+            isCurrentOpenOrderBuy = true;
             currentOrderId = data.orderId
-            console.log("First Buy order created", data);
+            console.log("First Sell order created", data);
         }).catch(e => {
             isFirstLoad = true;
-            isCurrentOpenOrderBuy = true;
-            console.log("Buy failed", e);
+            isCurrentOpenOrderBuy = false;
+            console.log("Sell failed", e);
         })
     }
 
