@@ -1,5 +1,6 @@
 require("dotenv").config()
 const {Spot} = require('@binance/connector');
+const cron = require('node-cron');
 
 const workEnv = ["kajUUropn0q1s37n9Y7jEr9fAgzAE6MLh7hIgXuIkP5EwAKyDlWZySVoTl7tSyJO", "tR57OBr2jh6AMEfyxOeJZsfgkrcsT8zjHUyj2gZsvqcM8sJB7rII4tFKSTGTLAXL"]
 
@@ -28,7 +29,6 @@ const createBuyOrder = ({client}) => client.newOrder(USDT_UAH, 'BUY', 'LIMIT', B
 
 const client = new Spot(...workEnv)
 
-const trade = () => {
     let isFirstLoad = true;
     let isCurrentOpenOrderBuy = false;
     let currentOrderId  = null;
@@ -46,7 +46,7 @@ const trade = () => {
         })
     }
 
-    setInterval(() => {
+const trade = () => {
         client.getOrder(USDT_UAH, {
             orderId: currentOrderId
         }).then(({ data }) => {
@@ -72,8 +72,9 @@ const trade = () => {
                     console.log("Sell failed", e);
                 })
             }}).catch(error => console.log(error))
-
-    }, 5000)
 }
 
-trade()
+// every minute
+cron.schedule('*/1 * * * *', () => {
+    trade();
+});
