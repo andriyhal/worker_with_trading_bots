@@ -1,5 +1,6 @@
 import "dotenv/config";
 import {Spot} from '@binance/connector';
+import {CronJob} from 'cron';
 import {createOrderInDB, getBotInfo} from "../db_requests.js";
 
 const TIME_IN_FORCE = 'GTC';
@@ -61,7 +62,7 @@ const binanceSpotLimitTrade = async () => {
         })
     }
 
-    setInterval(() => {
+    const trade = () => {
         client.getOrder(USDT_UAH, {
             orderId: currentOrderId
         }).then(async ({ data }) => {
@@ -93,7 +94,18 @@ const binanceSpotLimitTrade = async () => {
                 })
             }}).catch(error => console.log(error))
 
-    }, 5000)
+    };
+
+    const job = new CronJob(
+        '*/1 * * * *', // cronTime, every minute
+        trade, // onTick callback
+        // null, // onComplete callback when job.stop() was executed
+        // true, // start job, but does not fire onTick immediately
+        // see other params https://www.npmjs.com/package/cron, or delete all comments
+    );
+
+    job.start();
+    // job.stop();
 }
 
 export default binanceSpotLimitTrade;
