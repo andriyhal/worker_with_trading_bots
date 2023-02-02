@@ -1,8 +1,8 @@
 import {prisma} from "../prisma/db_client.js";
 
-export const createOrder = async ({ id, botId, isBuy, platformForeignId, sum }) => {
+export const createOrderInDB = async ({ id, botId, isBuy, platformForeignId, sum }) => {
     try {
-        const order = await prisma.order.create({
+        return await prisma.order.create({
             data: {
                 id,
                 botId,
@@ -11,22 +11,21 @@ export const createOrder = async ({ id, botId, isBuy, platformForeignId, sum }) 
                 sum
             }
         })
-        return order
+
     } catch(e) {
         console.log(e)
     }
 }
 
-export const closeOrder = async ({ id, fee = null }) => {
+export const closeOrderInDB = async ({ id, fee = null }) => {
     try {
-        const order = await prisma.order.update({
+        return await prisma.order.update({
             where: { id },
             data: {
                 fee,
                 closedAt: new Date()
             }
         })
-        return order
     } catch(e) {
         console.log(e)
     }
@@ -34,11 +33,10 @@ export const closeOrder = async ({ id, fee = null }) => {
 
 export const getBotInfo = async ({ id }) => {
     try {
-        const botInfo = await prisma.bot.findFirst({
+        return await prisma.bots.findFirst({
             where: { id }
         })
 
-        return botInfo
     } catch(e) {
         console.log(e)
     }
