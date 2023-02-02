@@ -1,9 +1,10 @@
 import "dotenv/config";
 import {Spot} from '@binance/connector';
-import {getBotInfo} from "../db_requests.js";
+import {createOrderInDB, getBotInfo} from "../db_requests.js";
 
 const TIME_IN_FORCE = 'GTC';
 const USDT_UAH = 'USDTUAH';
+const BINANCE_PLATFORM_DB_ID = '27db0bcd-0ff4-4b54-9564-02b242742454'
 
 const createSellOrder = ({client, price, quantity}) =>
     client.newOrder(USDT_UAH, 'SELL', 'LIMIT', {
@@ -30,19 +31,20 @@ const binanceSpotLimitTrade = async () => {
     let isCurrentOpenOrderBuy = false;
     let currentOrderId  = null;
 
-    if(isFirstLoad){
-        const botInfo = getBotInfo({ id: BOT_ID })
-        createBuyOrder(({client, price: botInfo.buyPrice, quantity: botInfo.buyQuantity})).then(({data}) => {
-            isFirstLoad = false
-            isCurrentOpenOrderBuy = false;
-            currentOrderId = data.orderId
-            console.log("First Buy order created", data);
-        }).catch(e => {
-            isFirstLoad = true;
-            isCurrentOpenOrderBuy = true;
-            console.log("Buy failed", e);
-        })
-    }
+    //// TODO: will implement logic with if sell first
+    // if(isFirstLoad){
+    //     const botInfo = await getBotInfo({ id: BOT_ID })
+    //     createBuyOrder(({client, price: botInfo.buyPrice, quantity: botInfo.buyQuantity})).then(({data}) => {
+    //         isFirstLoad = false
+    //         isCurrentOpenOrderBuy = false;
+    //         currentOrderId = data.orderId
+    //         createOrderInDB({id: data.id, botId: BOT_ID, isBuy: true, platformForeignId: BINANCE_PLATFORM_DB_ID, sum: botInfo.buyQuantity})
+    //     }).catch(e => {
+    //         isFirstLoad = true;
+    //         isCurrentOpenOrderBuy = true;
+    //         console.log("Buy failed", e);
+    //     })
+    // }
 
     if(isFirstLoad){
         const botInfo = await getBotInfo({ id: BOT_ID })
@@ -50,6 +52,7 @@ const binanceSpotLimitTrade = async () => {
             isFirstLoad = false
             isCurrentOpenOrderBuy = true;
             currentOrderId = data.orderId
+            createOrderInDB({id: data.id, botId: BOT_ID, isBuy: false, platformForeignId: BINANCE_PLATFORM_DB_ID, sum: botInfo.buyQuantity})
             console.log("First Sell order created", data);
         }).catch(e => {
             isFirstLoad = true;
@@ -68,6 +71,7 @@ const binanceSpotLimitTrade = async () => {
                 createSellOrder(({client, price: botInfo.sellPrice, quantity: botInfo.buyQuantity})).then(({data}) => {
                     currentOrderId = data.orderId;
                     isCurrentOpenOrderBuy = true;
+                    createOrderInDB({id: data.id, botId: BOT_ID, isBuy: false, platformForeignId: BINANCE_PLATFORM_DB_ID, sum: botInfo.buyQuantity})
                     console.log("Sell order created", data);
                 }).catch(err => {
                     isCurrentOpenOrderBuy = false;
@@ -80,6 +84,7 @@ const binanceSpotLimitTrade = async () => {
                 createBuyOrder(({client, price: botInfo.buyPrice, quantity: botInfo.buyQuantity})).then(({data}) => {
                     isCurrentOpenOrderBuy = false;
                     currentOrderId = data.orderId
+                    createOrderInDB({id: data.id, botId: BOT_ID, isBuy: true, platformForeignId: BINANCE_PLATFORM_DB_ID, sum: botInfo.buyQuantity})
                     console.log("Buy order created", data);
                 }).catch(e => {
                     isFirstLoad = true;
