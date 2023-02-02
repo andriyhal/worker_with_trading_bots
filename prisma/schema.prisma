@@ -54,27 +54,33 @@ model bot_strategy_spot_limit {
 model bots {
   id                        String                      @id
   profileId                 String
-  profit                    String
+  isActive                  Boolean                     @default(false)
+  isSellFirst               Boolean                     @default(false)
+  buyPrice                  String
+  sellPrice                 String
+  buyQuantity               String
+  profit                    String?
   pair                      String
   botStrategySmartMarketId  String?
-  botStrategySmartLimitId   String?
-  isActive                  Boolean                     @default(false)
   botStrategySpotLimitId    String?
+  botStrategySmartLimitId   String?
   bot_histories             bot_histories[]
   bot_strategy_smart_limit  bot_strategy_smart_limit[]
   bot_strategy_smart_market bot_strategy_smart_market[]
   bot_strategy_spot_limit   bot_strategy_spot_limit[]
-  profiles                  profiles                    @relation(fields: [profileId], references: [id])
   orders                    orders[]
-
-  @@index([profileId], map: "bots_profileId_fkey")
 }
 
 model orders {
-  id                String @id
-  botId             String
+  id                String    @id
+  createdAt         DateTime  @default(now())
+  isBuy             Boolean
+  sum               String
   platformForeignId String
-  bots              bots   @relation(fields: [botId], references: [id])
+  botId             String
+  closedAt          DateTime?
+  fee               String
+  bots              bots      @relation(fields: [botId], references: [id])
 
   @@index([botId], map: "orders_botId_fkey")
 }
@@ -87,13 +93,12 @@ model platforms {
 
 model profiles {
   id          String  @id
+  platformId  String
+  profileName String
   userId      String
   apiKey      String
   secretKey   String
   authToken   String?
-  platformId  String
-  profileName String
-  bots        bots[]
   users       users   @relation(fields: [userId], references: [id])
 
   @@index([userId], map: "profiles_userId_fkey")

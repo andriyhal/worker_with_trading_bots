@@ -1,42 +1,38 @@
 import "dotenv/config";
 import {Spot} from '@binance/connector';
+import {getBotInfo} from "../db_requests.js";
 
-const workEnv = ["b0oAIiuWAvLDfEAB1eAEWZ8AyBNnwagYBZK2GpirX8Ao0NNzZg9Z599pDiMlJKEd",
-    "UNWbaI6H9OonPbGcrU6EAUOD02zBTxpJllo4E2iKjm9PjLGqqvzRsMUck387IoMy"]
-
-const TRADE_USDT_QUANTITY = 11;
-const USDT_UAH_SELL_PRICE = "39.90";
-const USDT_UAH_BUY_PRICE = "39.82";
-const USDT_UAH = 'USDTUAH';
 const TIME_IN_FORCE = 'GTC';
+const USDT_UAH = 'USDTUAH';
 
-const SELL_LIMIT_ORDER_OPTIONS = {
-    price: USDT_UAH_SELL_PRICE,
-    quantity: TRADE_USDT_QUANTITY,
+const createSellOrder = ({client, price, quantity}) =>
+    client.newOrder(USDT_UAH, 'SELL', 'LIMIT', {
+        price,
+        quantity,
+        timeInForce: TIME_IN_FORCE
+    })
+
+const createBuyOrder = ({client, price, quantity}) => client.newOrder(USDT_UAH, 'BUY', 'LIMIT', {
+    price,
+    quantity,
     timeInForce: TIME_IN_FORCE
-}
+})
 
-const BUY_LIMIT_ORDER_OPTIONS = {
-    price: USDT_UAH_BUY_PRICE,
-    quantity: TRADE_USDT_QUANTITY,
-    timeInForce: TIME_IN_FORCE
-}
+const client = new Spot("b0oAIiuWAvLDfEAB1eAEWZ8AyBNnwagYBZK2GpirX8Ao0NNzZg9Z599pDiMlJKEd",
+    "UNWbaI6H9OonPbGcrU6EAUOD02zBTxpJllo4E2iKjm9PjLGqqvzRsMUck387IoMy")
 
-const createSellOrder = ({client}) =>
-    client.newOrder(USDT_UAH, 'SELL', 'LIMIT', SELL_LIMIT_ORDER_OPTIONS)
+const BOT_ID = "b28ddd30-3763-4e57-968f-d2399ae24385";
 
-const createBuyOrder = ({client}) => client.newOrder(USDT_UAH, 'BUY', 'LIMIT', BUY_LIMIT_ORDER_OPTIONS)
+// createOrder = async ({ id, botId, isBuy, platformForeignId, sum })
 
-const client = new Spot(...workEnv)
-
-export const binanceSpotLimitTrade = () => {
-    console.log({ workEnv })
+const binanceSpotLimitTrade = async () => {
     let isFirstLoad = true;
     let isCurrentOpenOrderBuy = false;
     let currentOrderId  = null;
 
     if(isFirstLoad){
-        createBuyOrder(({client})).then(({data}) => {
+        const botInfo = getBotInfo({ id: BOT_ID })
+        createBuyOrder(({client, price: botInfo.buyPrice, quantity: botInfo.buyQuantity})).then(({data}) => {
             isFirstLoad = false
             isCurrentOpenOrderBuy = false;
             currentOrderId = data.orderId
@@ -48,13 +44,28 @@ export const binanceSpotLimitTrade = () => {
         })
     }
 
+    if(isFirstLoad){
+        const botInfo = await getBotInfo({ id: BOT_ID })
+        createSellOrder(({client, price: botInfo.sellPrice, quantity: botInfo.buyQuantity})).then(({data}) => {
+            isFirstLoad = false
+            isCurrentOpenOrderBuy = true;
+            currentOrderId = data.orderId
+            console.log("First Sell order created", data);
+        }).catch(e => {
+            isFirstLoad = true;
+            isCurrentOpenOrderBuy = false;
+            console.log("Sell failed", e);
+        })
+    }
+
     setInterval(() => {
         client.getOrder(USDT_UAH, {
             orderId: currentOrderId
-        }).then(({ data }) => {
+        }).then(async ({ data }) => {
             console.log(`get order: ${ new Date() }`, {data, currentOrderId})
             if(data.status === "FILLED" && isCurrentOpenOrderBuy){
-                createSellOrder(({client})).then(({data}) => {
+                const botInfo = await getBotInfo({ id: BOT_ID })
+                createSellOrder(({client, price: botInfo.sellPrice, quantity: botInfo.buyQuantity})).then(({data}) => {
                     currentOrderId = data.orderId;
                     isCurrentOpenOrderBuy = true;
                     console.log("Sell order created", data);
@@ -65,15 +76,19 @@ export const binanceSpotLimitTrade = () => {
             }
 
             if(data.status === "FILLED" && !isCurrentOpenOrderBuy){
-                createBuyOrder(({client})).then(({data}) => {
-                    currentOrderId = data.orderId;
+                const botInfo = await getBotInfo({ id: BOT_ID })
+                createBuyOrder(({client, price: botInfo.buyPrice, quantity: botInfo.buyQuantity})).then(({data}) => {
                     isCurrentOpenOrderBuy = false;
+                    currentOrderId = data.orderId
                     console.log("Buy order created", data);
                 }).catch(e => {
+                    isFirstLoad = true;
                     isCurrentOpenOrderBuy = true;
-                    console.log("Sell failed", e);
+                    console.log("Buy failed", e);
                 })
             }}).catch(error => console.log(error))
 
     }, 5000)
 }
+
+export default binanceSpotLimitTrade;
