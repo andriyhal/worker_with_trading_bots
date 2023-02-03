@@ -68,7 +68,6 @@ model bots {
   bot_strategy_smart_limit  bot_strategy_smart_limit[]
   bot_strategy_smart_market bot_strategy_smart_market[]
   bot_strategy_spot_limit   bot_strategy_spot_limit[]
-  orders                    orders[]
 }
 
 model orders {
@@ -79,8 +78,8 @@ model orders {
   platformForeignId String
   botId             String
   closedAt          DateTime?
-  fee               String
-  bots              bots      @relation(fields: [botId], references: [id])
+  fee               String?
+  feeAsset          String?
 
   @@index([botId], map: "orders_botId_fkey")
 }
@@ -106,9 +105,11 @@ model profiles {
 
 model users {
   id        String      @id
-  name      String      @unique
+  username  String      @unique(map: "users_name_key")
   email     String      @unique
   password  String
   profiles  profiles[]
   platforms platforms[] @relation("PlatformToUser")
+
+  @@unique([id, username], map: "id")
 }
