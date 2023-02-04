@@ -57,7 +57,8 @@ const binanceSpotLimitTrade = async () => {
                 platformForeignId: BINANCE_PLATFORM_DB_ID,
                 sum: botInfo.buyQuantity,
                 fee: sellOrderData.fills?.[0]?.commission,
-                feeAsset: sellOrderData.fills?.[0]?.commissionAsset
+                feeAsset: sellOrderData.fills?.[0]?.commissionAsset,
+                price: botInfo.sellPrice
             })
             console.log("First Sell order created", sellOrderData);
         }).catch(e => {
@@ -85,7 +86,8 @@ const binanceSpotLimitTrade = async () => {
                         platformForeignId: BINANCE_PLATFORM_DB_ID,
                         sum: botInfo.buyQuantity,
                         fee: sellOrderData.fills?.[0]?.commission,
-                        feeAsset: sellOrderData.fills?.[0]?.commissionAsset
+                        feeAsset: sellOrderData.fills?.[0]?.commissionAsset,
+                        price: botInfo.sellPrice
                     })
                     console.log("Sell order created", sellOrderData);
                 }).catch(err => {
@@ -108,7 +110,8 @@ const binanceSpotLimitTrade = async () => {
                         platformForeignId: BINANCE_PLATFORM_DB_ID,
                         sum: botInfo.buyQuantity,
                         fee: buyOrderData.fills?.[0]?.commission,
-                        feeAsset: buyOrderData.fills?.[0]?.commissionAsset
+                        feeAsset: buyOrderData.fills?.[0]?.commissionAsset,
+                        price: botInfo.buyPrice
                     })
                     console.log("Buy order created", buyOrderData);
                 }).catch(e => {

@@ -1,6 +1,6 @@
 import {prisma} from "../prisma/db_client.js";
 
-export const createOrderInDB = async ({ id, botId, isBuy, platformForeignId, sum, fee, feeAsset }) => {
+export const createOrderInDB = async ({ id, botId, isBuy, platformForeignId, sum, fee, feeAsset, price }) => {
     try {
         return await prisma.orders.create({
             data: {
@@ -8,6 +8,7 @@ export const createOrderInDB = async ({ id, botId, isBuy, platformForeignId, sum
                 botId,
                 isBuy,
                 platformForeignId,
+                price: price.toString(),
                 sum,
                 fee,
                 feeAsset

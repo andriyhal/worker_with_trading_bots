@@ -80,6 +80,7 @@ model orders {
   closedAt          DateTime?
   fee               String?
   feeAsset          String?
+  price             String?
 
   @@index([botId], map: "orders_botId_fkey")
 }
