@@ -19,8 +19,8 @@ const createBuyOrder = ({client, price, quantity}) => client.newOrder(USDT_UAH, 
     timeInForce: TIME_IN_FORCE
 })
 
-const client = new Spot("kajUUropn0q1s37n9Y7jEr9fAgzAE6MLh7hIgXuIkP5EwAKyDlWZySVoTl7tSyJO",
-    "tR57OBr2jh6AMEfyxOeJZsfgkrcsT8zjHUyj2gZsvqcM8sJB7rII4tFKSTGTLAXL")
+const client = new Spot("6Uo26OYrgBPG5nmeTOCOAJ3wGSswVNeJ5TiB4vr9VR818V5cNKFmeaLM9NZ5w6tC",
+    "3lgshU2Gwd2v5TkGwemAwqSbefR0IJc0neqnpWZGPlD1EoHtGUgAjVC7Kvy6YPp8")
 
 const BOT_ID = "d8d3bbec-d5b2-499f-8dc1-fa6fd044d463";
 
