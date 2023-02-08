@@ -81,8 +81,7 @@ model orders {
   fee               String?
   feeAsset          String?
   price             String?
-
-  @@index([botId], map: "orders_botId_fkey")
+  isCancel          Boolean?  @default(false)
 }
 
 model platforms {

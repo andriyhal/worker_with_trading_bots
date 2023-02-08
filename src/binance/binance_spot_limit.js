@@ -19,10 +19,10 @@ const createBuyOrder = ({client, price, quantity}) => client.newOrder(USDT_UAH, 
     timeInForce: TIME_IN_FORCE
 })
 
-const client = new Spot("b0oAIiuWAvLDfEAB1eAEWZ8AyBNnwagYBZK2GpirX8Ao0NNzZg9Z599pDiMlJKEd",
-    "UNWbaI6H9OonPbGcrU6EAUOD02zBTxpJllo4E2iKjm9PjLGqqvzRsMUck387IoMy")
+const client = new Spot("kajUUropn0q1s37n9Y7jEr9fAgzAE6MLh7hIgXuIkP5EwAKyDlWZySVoTl7tSyJO",
+    "tR57OBr2jh6AMEfyxOeJZsfgkrcsT8zjHUyj2gZsvqcM8sJB7rII4tFKSTGTLAXL")
 
-const BOT_ID = "b28ddd30-3763-4e57-968f-d2399ae24385";
+const BOT_ID = "d8d3bbec-d5b2-499f-8dc1-fa6fd044d463";
 
 const binanceSpotLimitTrade = async () => {
     let isFirstLoad = true;
