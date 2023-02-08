@@ -33,6 +33,20 @@ export const closeOrderInDB = async ({ id }) => {
     }
 }
 
+export const cancelOrderInDB = async ({ id }) => {
+    try {
+        return await prisma.orders.update({
+            where: { id: id.toString() },
+            data: {
+                closedAt: new Date(),
+                isCancel: true,
+            }
+        })
+    } catch(e) {
+        console.log(e)
+    }
+}
+
 export const getBotInfo = async ({ id }) => {
     try {
         return await prisma.bots.findFirst({
