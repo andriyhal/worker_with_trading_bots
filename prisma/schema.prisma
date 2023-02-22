@@ -113,3 +113,13 @@ model users {
 
   @@unique([id, username], map: "id")
 }
+
+model Log {
+  id        String   @id @default(uuid())
+  message   String
+  timestamp DateTime @default(now())
+  level     String
+  data      Json?
+
+  @@map("logs")
+}

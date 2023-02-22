@@ -1,6 +1,7 @@
 import "dotenv/config";
 import {Spot} from '@binance/connector';
 import {cancelOrderInDB, closeOrderInDB, createOrderInDB, getBotInfo} from "../db_requests.js";
+import { logger } from "../utils/logger.js";
 
 const TIME_IN_FORCE = 'GTC';
 const USDT_UAH = 'USDTUAH';
@@ -36,6 +37,7 @@ const isPrevBotInfoEqual = (prevBotInfo = {}, currentBotInfo = {}) => {
 }
 
 const binanceSpotLimitTrade = async () => {
+    logger.info('Start bot');
     let isFirstLoad = true;
     let isCurrentOpenOrderBuy = false;
     let currentOrderId  = null;
@@ -78,6 +80,7 @@ const binanceSpotLimitTrade = async () => {
             isFirstLoad = true;
             isCurrentOpenOrderBuy = true;
             console.log("Sell failed", e);
+            logger.error('Sell failed', e);
         })
     }
 
@@ -86,6 +89,8 @@ const binanceSpotLimitTrade = async () => {
             orderId: currentOrderId
         }).then(async ({ data }) => {
             console.log(`get order: ${ new Date() }`, {data, currentOrderId})
+            logger.info('Start bot', { data, currentOrderId });
+
             const botInfo = await getBotInfo({ id: BOT_ID })
 
             const createSellOrder = () => createSellOrderBinanceRequest(({client, price: botInfo.sellPrice, quantity: botInfo.buyQuantity})).then(({data: sellOrderData}) => {
@@ -147,6 +152,8 @@ const binanceSpotLimitTrade = async () => {
                     orderId: currentOrderId
                 }).then(() => {
                     console.log(`Order id: ${currentOrderId} canceled`)
+                    logger.info(`Order id: ${currentOrderId} canceled`);
+
                     cancelOrderInDB({id: currentOrderId})
                     createSellOrder()
                     prevBotInfo = botInfo;
